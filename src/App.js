@@ -1,24 +1,25 @@
-import logo from './logo.svg';
-import './App.css';
+import {ThemeProvider} from 'styled-components'
+import GlobalStyle from './utils/style'
+import Dropzone from './components/dropzone'
+import Code from './components/code'
+
+import CodeProvider from './context/'
+const theme = {
+  bg:'#343837',
+  primary:'#0F9B8E',
+  secondary:'#03719C',
+  white:'#fff'
+}
 
 function App() {
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <CodeProvider>
+    <ThemeProvider theme={theme}>
+      <GlobalStyle />
+      <Dropzone />
+      <Code />
+    </ThemeProvider>
+    </CodeProvider>
   );
 }
 
