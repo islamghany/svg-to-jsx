@@ -1,5 +1,5 @@
 import SVGO from "svgo"
-
+ 
 const svgo = new SVGO({
   full: true,
   plugins: [

@@ -6,9 +6,21 @@ import prettier from "prettier";
 import svgr from "@svgr/core";
 import {CodeContext} from '../../context'
 
+const handleSVGName=(e='')=>{
+  let name = e.replace(/#|_| |-/g, '');
+  let nums='';
+    for(let ch of name){
+      if(!isNaN(ch) &&!isNaN(parseInt(ch))) nums+=ch;
+      else break;
+    } 
+    name=name.replace(/[0-9]/g,'');
 
+  
+    
+    return nums?.length ? name+nums : name;
+}
 const UploaderContainer = styled.div`
-  min-height: 100vh;
+  margin:2rem 0;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -60,9 +72,8 @@ const handleCode = (code)=>{
    return 'export '+code.slice(code.indexOf('fun'),code.indexOf('export default'));
 }
 function MyDropzone() {
-  const {setJSCode} = useContext(CodeContext);
+  const {setJSCode,endName} = useContext(CodeContext);
   const [svgCode, setSVGCode] = useState([]);
-  const [isLoading,setIsLoading] = useState(false);
 
   const onDrop = useCallback((acceptedFiles) => {
     setSVGCode([]);
@@ -110,8 +121,9 @@ function MyDropzone() {
             arrowParens: "always",
           },
         },
-        { componentName: c.name.split(".")[0].replace(' ', '') }
+        { componentName: endName?.length ? handleSVGName(c.name.split(".")[0])+endName : handleSVGName(c.name.split(".")[0])  }
       );
+      //icon +=handleCode(transformedCode);
        setJSCode((e)=>e+handleCode(transformedCode));
       // const prettierCode = prettier.format(transformedCode, {
       //   parser: "babel",
@@ -129,27 +141,27 @@ function MyDropzone() {
       // });
       // setJSCode((jsCode) => jsCode.concat({ name: c.name, svg: prettierCode }));
     });
+    // setJSCode(icon);
   };
   const {
     rejectedFiles,
     acceptedFiles,
     getRootProps,
     getInputProps,
-    isDragActive,
   } = useDropzone({
     onDrop,
     accept: "image/svg+xml",
   });
   useEffect(() => {
     if (svgCode.length && svgCode.length === acceptedFiles.length) {
+      //icon='';
       onSubmit(svgCode);
     }
-  }, [svgCode]);
-
+  }, [svgCode,endName]);
   return (
     <UploaderContainer>
       <h1>Upload Svgs</h1>
-
+      {rejectedFiles && <p>error there are error in upload files</p>}
       <div {...getRootProps()} className="box">
         <div className="icon">
           <UploadIcon />

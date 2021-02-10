@@ -2,6 +2,7 @@ import {ThemeProvider} from 'styled-components'
 import GlobalStyle from './utils/style'
 import Dropzone from './components/dropzone'
 import Code from './components/code'
+import AddEnd from './components/addEnd/';
 
 import CodeProvider from './context/'
 const theme = {
@@ -16,6 +17,7 @@ function App() {
     <CodeProvider>
     <ThemeProvider theme={theme}>
       <GlobalStyle />
+      <AddEnd />
       <Dropzone />
       <Code />
     </ThemeProvider>

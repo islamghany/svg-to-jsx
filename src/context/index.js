@@ -4,7 +4,8 @@ export const CodeContext = createContext();
 
 const Provider = ({children})=>{
 	const [jsCode,setJSCode] = useState(null);
-	return <CodeContext.Provider value={{jsCode,setJSCode}}>
+	const [endName,setEndName] = useState(null)
+	return <CodeContext.Provider value={{jsCode,setJSCode,endName,setEndName}}>
 		{children}
 	</CodeContext.Provider>
 }
