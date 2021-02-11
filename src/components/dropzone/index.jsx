@@ -13,10 +13,9 @@ const handleSVGName=(e='')=>{
       if(!isNaN(ch) &&!isNaN(parseInt(ch))) nums+=ch;
       else break;
     } 
-    name=name.replace(/[0-9]/g,'');
-
-  
-    
+    if(nums.length){
+     name=name.slice(nums.length);
+   }
     return nums?.length ? name+nums : name;
 }
 const UploaderContainer = styled.div`
