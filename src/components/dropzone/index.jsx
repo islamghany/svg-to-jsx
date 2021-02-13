@@ -5,7 +5,8 @@ import svgo from "../../utils/svgo";
 import prettier from "prettier";
 import svgr from "@svgr/core";
 import {CodeContext} from '../../context'
-
+import {Fileimage} from '../../assets/icons/'
+import Loading from '../loading/'
 const handleSVGName=(e='')=>{
   let name = e.replace(/#|_| |-/g, '');
   let nums='';
@@ -18,14 +19,70 @@ const handleSVGName=(e='')=>{
    }
     return nums?.length ? name+nums : name;
 }
+const Button = styled.button`
+    background-image: linear-gradient(181.81deg,#6333ff 25%,#441ebf 75%);
+    background-repeat: no-repeat;
+    background-position: 50% 50%;
+    background-size: auto 200%;
+    padding:.8rem .8rem;
+    min-width:8rem;
+    border:none;
+    cursor: pointer;
+    font-size:1.6rem;
+    color:#fff;
+    border-radius:.8rem;
+    margin-top:1rem;
+    outline:0;
+
+`
+
+const Divider = styled.div`
+    height:.1rem;
+    background:${({theme})=>theme.subText};
+    margin:1rem 0 ;
+    border-radius:.002rem;
+`
+
 const UploaderContainer = styled.div`
-  margin:2rem 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-direction: column;
-  h1 {
-    margin: 0 0 4rem 0;
+  flex:1;
+  display:flex;
+  flex-direction:column;
+  height:calc( 100vh - 6.6rem);
+  h5{
+    padding:1.2rem;
+    text-align:center;
+    border-bottom:1px solid ${({theme})=>theme.subText};
+    background: ${({theme})=>theme.secondary};
+  }
+  .container{
+    flex:1;
+    display:flex;
+    align-items: center;
+    justify-content: center;
+    outline:none;
+    position: relative;
+    .active-drag{
+    position: absolute;
+    top:0;
+    left:0;
+    bottom:0;
+    right:0;
+    z-index: 4;
+    background: rgba(0,0,0,.8);
+    border:2px dashed ${({ theme }) => theme.mainText};
+    display:flex;
+    align-items: center;
+    justify-content: center;
+    .icon{
+          margin-right:.8rem;
+
+      svg{
+        path{
+          fill:${({ theme }) => theme.mainText};
+        }
+      }
+    }
+    }
   }
   .box {
     padding: 2rem 4rem;
@@ -33,13 +90,8 @@ const UploaderContainer = styled.div`
     align-items: center;
     justify-content: center;
     flex-direction: column;
-    border: 2px dashed ${({ theme }) => theme.secondary};
+    background :${({ theme }) => theme.secondary};
     border-radius: 1rem;
-    min-height: 25rem;
-    max-width: 40rem;
-    width: 100%;
-    outline: none;
-    cursor: pointer;
   }
   .icon {
     svg {
@@ -73,7 +125,6 @@ const handleCode = (code)=>{
 function MyDropzone() {
   const {setJSCode,endName} = useContext(CodeContext);
   const [svgCode, setSVGCode] = useState([]);
-
   const onDrop = useCallback((acceptedFiles) => {
     setSVGCode([]);
     for (var i = 0; i < acceptedFiles.length; i++) {
@@ -91,8 +142,7 @@ function MyDropzone() {
     };
     reader.readAsBinaryString(file);
   }
-  const onSubmit = async (code) => {
-    setJSCode('')
+  const waitUntil = async (code)=>{
     code.map(async (c) => {
       const svgoCode = await svgo(c.svg);
       const transformedCode = await svgr(
@@ -140,33 +190,53 @@ function MyDropzone() {
       // });
       // setJSCode((jsCode) => jsCode.concat({ name: c.name, svg: prettierCode }));
     });
-    // setJSCode(icon);
+  }
+  const onSubmit = async (code) => {
+     setJSCode('')
+    await waitUntil(code);
+    
   };
   const {
     rejectedFiles,
     acceptedFiles,
     getRootProps,
     getInputProps,
+    isDragActive,
+    open
   } = useDropzone({
     onDrop,
     accept: "image/svg+xml",
+    noClick:true,
+    noKeyboard: true
   });
   useEffect(() => {
     if (svgCode.length && svgCode.length === acceptedFiles.length) {
-      //icon='';
       onSubmit(svgCode);
     }
   }, [svgCode,endName]);
   return (
     <UploaderContainer>
-      <h1>Upload Svgs</h1>
+      <h5>SVGs Input</h5>
+      <div className="container" {...getRootProps()}>
+      {isDragActive  && <div className="active-drag">
+        <div className="icon">
+          <Fileimage />
+        </div>
+        <h3>Drag Your SVGs here</h3>
+      </div>}  
       {rejectedFiles && <p>error there are error in upload files</p>}
-      <div {...getRootProps()} className="box">
+      <div  className="box">
         <div className="icon">
           <UploadIcon />
         </div>
         <input {...getInputProps()} />
-        <p>Drag & Drop your svgs here or Click in the box</p>
+        <p>Drag & Drop your svgs here</p>
+        <Divider />
+        <p>or</p>
+        <Button onClick={open}>
+          Upload SVGs
+        </Button>
+      </div>
       </div>
     </UploaderContainer>
   );

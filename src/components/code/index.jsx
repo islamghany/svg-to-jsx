@@ -1,46 +1,124 @@
-import { useContext } from "react";
+import { useContext,useEffect,useState } from "react";
 import styled from "styled-components";
 import Highlight, { defaultProps } from "prism-react-renderer"
 import nightOwl from "prism-react-renderer/themes/nightOwl"
 import {CodeContext} from '../../context';
-
+import copy from 'copy-to-clipboard';
+import {Clipboard} from '../../assets/icons/'
 
 //const CodeContainer 
 
+const Icon = styled.div`
+  cursor:pointer;
+  height:2.4rem;
+  display:flex;
+    align-items:center;
+    justify-content: space-between;
+  svg{
+    path{
+    fill: ${({theme})=>theme.mainText};
+    transition:fill .3s ease;
+  }
+  }
+  &:hover{
+    svg{
+    path{
+    fill: ${({theme})=>theme.primary};
+  }
+  }
+  }
+`
 const CodeContainer = styled.div`
-	padding:2rem;
-	margin:4rem;
-	
+  flex:1;
+  display:flex;
+  flex-direction:column;
+  height:calc( 100vh - 6.6rem);
+  border-left:1px solid ${({theme})=>theme.subText};
+  position: relative;
+  .head{
+    padding:.8rem 2rem;
+    display:flex;
+    align-items:center;
+    justify-content: space-between;
+    border-bottom:1px solid ${({theme})=>theme.subText};
+
+  }
+  h5{
+    
+    text-align:center;
+    background: ${({theme})=>theme.secondary};
+  }
 `
 const Pre = styled.pre`
   text-align: left;
-  margin: 1em 0;
+  position: relative;
   padding: 0.5em;
   overflow: auto;
-  max-height:90vh;
-`;
- 
+  flex:1; 
+  width:calc( (100vw - 20rem) / 2);
+  background: ${({theme})=>theme.bg} !important;
+  .noLine{
+    position: absolute;
+    top:0;
+    left:0;
+    width:4.4rem;
+    bottom: 0;
+    background: ${({theme})=>theme.secondary} !important;
+    z-index: 33;
+  }
+  &::selection{
+     background: ${({theme})=>theme.primary};
+  }
+ `
 const Line = styled.div`
-  display: table-row;
+    display: table-row;
 `;
  
 const LineNo = styled.span`
+ position: absolute;
+ z-index: 43;
   display: table-cell;
   text-align: right;
-  padding-right: 1em;
+  padding-left: .5rem;
   user-select: none;
-  opacity: 0.5;
+  color:${({theme})=>theme.mainText}
+
 `;
  
 const LineContent = styled.span`
   display: table-cell;
+  padding-left:4.4rem;
 `;
+
+const Copy = ({code})=>{
+    const [copied, setCopied] = useState(false)
+   return copied ? <Icon>
+   <span>Copied..</span></Icon> : <Icon  onClick={() => {
+                copy(code, { message: "Click to copy to clipboard" })
+                setCopied(true)
+
+                window.setTimeout(() => {
+                  setCopied(false)
+                }, 2000)
+                }}>
+     <Clipboard width="24px" height="24px" />
+   </Icon>
+}
 const Code = ()=>{
 	const {jsCode} = useContext(CodeContext);
-	if(!jsCode || !jsCode?.length) return null;
-	return <CodeContainer><Highlight {...defaultProps} theme={nightOwl} code={jsCode} language="jsx">
+	return <CodeContainer>
+  <div className="head">
+         
+  <h5>
+    JSX Output
+  </h5>
+   <Copy code={jsCode||''}/>
+  </div>
+  <Highlight {...defaultProps} theme={nightOwl} code={jsCode || ''} language="jsx">
       {({ className, style, tokens, getLineProps, getTokenProps }) => (
+
       <Pre className={className} style={style}>
+        <div className="noLine"></div>
         {tokens.map((line, i) => (
           <Line key={i} {...getLineProps({ line, key: i })}>
             <LineNo>{i + 1}</LineNo>

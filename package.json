@@ -4,12 +4,6 @@
   "private": true,
   "dependencies": {
     "@svgr/core": "^5.5.0",
-<<<<<<< HEAD
-    "@svgr/plugin-jsx": "^4.3.2",
-    "@svgr/plugin-prettier": "^4.3.2",
-    "@svgr/plugin-svgo": "^4.3.1",
-=======
->>>>>>> e410370f5d0a51bc7e1c27ee56352397840f84ef
     "@testing-library/jest-dom": "^5.11.9",
     "@testing-library/react": "^11.2.5",
     "@testing-library/user-event": "^12.6.3",
