@@ -2,10 +2,7 @@ import styled from 'styled-components';
 
 const HeaderContainer = styled.div`
 	background-image: linear-gradient(181.81deg,#6333ff 25%,#441ebf 75%);
-    background-repeat: no-repeat;
-    background-position: 50% 50%;
-    background-size: auto 200%;
-    padding:2rem;
+    padding:1rem 2rem;
     display:flex;
     justify-content: space-between;
     align-items: center;

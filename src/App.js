@@ -14,11 +14,12 @@ import Options from './components/options/'
     background-size: auto 200%;
 */
 const theme = {
-  bg:'#0E0E12',
+  bg:'#222529',
   primary:'#6333ff',
-  secondary:'#16161E',
+  secondary:'#272A2E',
   mainText:'#eef5f8',
-  subText:'#788ca0',
+  subText:'rgba(255,255,255,.5)',
+  border:'rgb(255 255 255 / 23%)',
   gradient:'linear-gradient(181.81deg,#6333ff 25%,#441ebf 75%)',
   gradient2:'linear-gradient(90deg,#f4bd82,#fe9e9a 30%,#e47ac8)',
   white:'#fff'

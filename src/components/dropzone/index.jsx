@@ -1,87 +1,93 @@
-import { useCallback, useEffect, useState,useContext } from "react";
+import { useCallback, useEffect, useState, useContext } from "react";
 import { useDropzone } from "react-dropzone";
 import styled from "styled-components";
 import svgo from "../../utils/svgo";
-import prettier from "prettier";
+import prettier from "prettier/standalone";
 import svgr from "@svgr/core";
-import {CodeContext} from '../../context'
-import {Fileimage} from '../../assets/icons/'
-import Loading from '../loading/'
-const handleSVGName=(e='')=>{
-  let name = e.replace(/#|_| |-/g, '');
-  let nums='';
-    for(let ch of name){
-      if(!isNaN(ch) &&!isNaN(parseInt(ch))) nums+=ch;
-      else break;
-    } 
-    if(nums.length){
-     name=name.slice(nums.length);
-   }
-    return nums?.length ? name+nums : name;
-}
-const Button = styled.button`
-    background-image: linear-gradient(181.81deg,#6333ff 25%,#441ebf 75%);
-    background-repeat: no-repeat;
-    background-position: 50% 50%;
-    background-size: auto 200%;
-    padding:.8rem .8rem;
-    min-width:8rem;
-    border:none;
-    cursor: pointer;
-    font-size:1.6rem;
-    color:#fff;
-    border-radius:.8rem;
-    margin-top:1rem;
-    outline:0;
+import { CodeContext } from "../../context";
+import { Fileimage } from "../../assets/icons/";
+import Loading from "../loading/";
+import babylon from "prettier/parser-babel";
 
-`
+const capitalize = (s) => {
+  if (typeof s !== "string") return "";
+  return s.charAt(0).toUpperCase() + s.slice(1);
+};
+const handleSVGName = (e = "") => {
+  let name = e.replace(/#|_| |-/g, "");
+  name = capitalize(name);
+  let nums = "";
+  for (let ch of name) {
+    if (!isNaN(ch) && !isNaN(parseInt(ch))) nums += ch;
+    else break;
+  }
+  if (nums.length) {
+    name = name.slice(nums.length);
+  }
+  return nums?.length ? name + nums : name;
+};
+const Button = styled.button`
+  background-image: linear-gradient(181.81deg, #6333ff 25%, #441ebf 75%);
+  background-repeat: no-repeat;
+  background-position: 50% 50%;
+  background-size: auto 200%;
+  padding: 0.8rem 0.8rem;
+  min-width: 8rem;
+  border: none;
+  cursor: pointer;
+  font-size: 1.6rem;
+  color: #fff;
+  border-radius: 0.8rem;
+  margin-top: 1rem;
+  outline: 0;
+`;
 
 const Divider = styled.div`
-    height:.1rem;
-    background:${({theme})=>theme.subText};
-    margin:1rem 0 ;
-    border-radius:.002rem;
-`
+  height: 0.1rem;
+  background: ${({ theme }) => theme.subText};
+  margin: 1rem 0;
+  border-radius: 0.002rem;
+`;
 
 const UploaderContainer = styled.div`
-  flex:1;
-  display:flex;
-  flex-direction:column;
-  height:calc( 100vh - 6.6rem);
-  h5{
-    padding:1.2rem;
-    text-align:center;
-    border-bottom:1px solid ${({theme})=>theme.subText};
-    background: ${({theme})=>theme.secondary};
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - 6.6rem);
+  h5 {
+    padding: 1.2rem;
+    text-align: center;
+    border-bottom: 1px solid ${({ theme }) => theme.border};
+    background: ${({ theme }) => theme.secondary};
   }
-  .container{
-    flex:1;
-    display:flex;
+  .container {
+    flex: 1;
+    display: flex;
     align-items: center;
     justify-content: center;
-    outline:none;
+    outline: none;
     position: relative;
-    .active-drag{
-    position: absolute;
-    top:0;
-    left:0;
-    bottom:0;
-    right:0;
-    z-index: 4;
-    background: rgba(0,0,0,.8);
-    border:2px dashed ${({ theme }) => theme.mainText};
-    display:flex;
-    align-items: center;
-    justify-content: center;
-    .icon{
-          margin-right:.8rem;
+    .active-drag {
+      position: absolute;
+      top: 0;
+      left: 0;
+      bottom: 0;
+      right: 0;
+      z-index: 4;
+      background: rgba(0, 0, 0, 0.8);
+      border: 2px dashed ${({ theme }) => theme.mainText};
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      .icon {
+        margin-right: 0.8rem;
 
-      svg{
-        path{
-          fill:${({ theme }) => theme.mainText};
+        svg {
+          path {
+            fill: ${({ theme }) => theme.mainText};
+          }
         }
       }
-    }
     }
   }
   .box {
@@ -90,7 +96,7 @@ const UploaderContainer = styled.div`
     align-items: center;
     justify-content: center;
     flex-direction: column;
-    background :${({ theme }) => theme.secondary};
+    background: ${({ theme }) => theme.secondary};
     border-radius: 1rem;
   }
   .icon {
@@ -119,12 +125,28 @@ function UploadIcon(props) {
   );
 }
 
-const handleCode = (code)=>{
-   return 'export '+code.slice(code.indexOf('fun'),code.indexOf('export default'));
-}
+let imports = {};
+const handleCode = (code) => {
+  // if(rn && code?.length > 20){
+  //   const ex =   code.slice(code.indexOf("Svg, {") + 6, code.indexOf("}")).split(',');
+  //   for(let o of ex){
+  //     if(o?.length && !(o.trim() in imports)){
+  //         imports[o.trim()]=1;
+  //     }
+  //   }
+  //   console.log(imports);
+  // }
+  return (
+    "export " + code.slice(code.indexOf("fun"), code.indexOf("export default"))
+  );
+};
+const getImportsName = () => {
+  return Object.keys(imports).join(" ,");
+};
 function MyDropzone() {
-  const {setJSCode,endName} = useContext(CodeContext);
+  const { setJSCode, endName, RN,icon } = useContext(CodeContext);
   const [svgCode, setSVGCode] = useState([]);
+  //const [imports,setImports] = useState({});
   const onDrop = useCallback((acceptedFiles) => {
     setSVGCode([]);
     for (var i = 0; i < acceptedFiles.length; i++) {
@@ -142,17 +164,16 @@ function MyDropzone() {
     };
     reader.readAsBinaryString(file);
   }
-  const waitUntil = async (code)=>{
+  const waitUntil = async (code) => {
     code.map(async (c) => {
       const svgoCode = await svgo(c.svg);
       const transformedCode = await svgr(
         svgoCode,
         {
-
           svgCode: "",
-          native: false,
+          native: RN,
           name: "Icon",
-          icon: false,
+          icon: icon,
           jsx: false,
           jsCode: "",
           prettier: {
@@ -170,12 +191,16 @@ function MyDropzone() {
             arrowParens: "always",
           },
         },
-        { componentName: endName?.length ? handleSVGName(c.name.split(".")[0])+endName : handleSVGName(c.name.split(".")[0])  }
+        {
+          componentName: endName?.length
+            ? handleSVGName(c.name.split(".")[0]) + endName
+            : handleSVGName(c.name.split(".")[0]),
+        }
       );
       //icon +=handleCode(transformedCode);
-       setJSCode((e)=>e+handleCode(transformedCode));
-      // const prettierCode = prettier.format(transformedCode, {
-      //   parser: "babel",
+      // setJSCode((e)=>e+handleCode(transformedCode));
+      //  const prettierCode = prettier.format(transformedCode,{
+      //   parser: 'babel',
       //   printWidth: 80,
       //   tabWidth: 2,
       //   useTabs: false,
@@ -187,14 +212,53 @@ function MyDropzone() {
       //   bracketSpacing: true,
       //   jsxBracketSameLine: false,
       //   arrowParens: "always",
-      // });
+      // }
+      //  );
+      const formattedCode = prettier.format(transformedCode, {
+        parser: "babel",
+        plugins: [babylon],
+        printWidth: 80,
+        tabWidth: 2,
+        useTabs: false,
+        semi: true,
+        singleQuote: false,
+        quoteProps: "as-needed",
+        jsxSingleQuote: false,
+        trailingComma: "none",
+        bracketSpacing: true,
+        jsxBracketSameLine: false,
+        arrowParens: "always",
+      });
+      //console.log(formattedCode)
+      setJSCode((e) => ({
+        code: e.code + handleCode(formattedCode),
+        imports: ((impo={},RN) => {         
+          if (RN) {
+             let imp = {...impo};
+              const exp = formattedCode.slice(formattedCode.indexOf("Svg, {") + 6, formattedCode.indexOf("}"))
+              .split(",");
+            for (let o of exp) {
+              if (o?.length && !(o.trim() in imp)) {
+                imp[o.trim()] = 1;
+              }
+            }
+            return {...imp}
+          }
+          return {};
+        })(e.imports,RN),
+      }));
+
       // setJSCode((jsCode) => jsCode.concat({ name: c.name, svg: prettierCode }));
     });
-  }
+  };
+  // const doAfter= async ()=>{
+  //     console.log(imports)
+  //     setJSCode((e)=>'import Svg, { '+getImportsName()+' } from "react-native-svg" \n\n'+e);
+  //   }
   const onSubmit = async (code) => {
-     setJSCode('')
+    setJSCode({ code: "", imports: {} ,loading:true});
     await waitUntil(code);
-    
+    setJSCode(e=>({ ...e,loading:false}));
   };
   const {
     rejectedFiles,
@@ -202,41 +266,42 @@ function MyDropzone() {
     getRootProps,
     getInputProps,
     isDragActive,
-    open
+    open,
   } = useDropzone({
     onDrop,
     accept: "image/svg+xml",
-    noClick:true,
-    noKeyboard: true
+    noClick: true,
+    noKeyboard: true,
   });
   useEffect(() => {
     if (svgCode.length && svgCode.length === acceptedFiles.length) {
+      //if(RN) imports={};
       onSubmit(svgCode);
     }
-  }, [svgCode,endName]);
+  }, [svgCode, endName,RN,icon]);
   return (
     <UploaderContainer>
       <h5>SVGs Input</h5>
       <div className="container" {...getRootProps()}>
-      {isDragActive  && <div className="active-drag">
-        <div className="icon">
-          <Fileimage />
+        {isDragActive && (
+          <div className="active-drag">
+            <div className="icon">
+              <Fileimage />
+            </div>
+            <h3>Drag Your SVGs here</h3>
+          </div>
+        )}
+        {rejectedFiles && <p>error there are error in upload files</p>}
+        <div className="box">
+          <div className="icon">
+            <UploadIcon />
+          </div>
+          <input {...getInputProps()} />
+          <p>Drag & Drop your svgs here</p>
+          <Divider />
+          <p>or</p>
+          <Button onClick={open}>Upload SVGs</Button>
         </div>
-        <h3>Drag Your SVGs here</h3>
-      </div>}  
-      {rejectedFiles && <p>error there are error in upload files</p>}
-      <div  className="box">
-        <div className="icon">
-          <UploadIcon />
-        </div>
-        <input {...getInputProps()} />
-        <p>Drag & Drop your svgs here</p>
-        <Divider />
-        <p>or</p>
-        <Button onClick={open}>
-          Upload SVGs
-        </Button>
-      </div>
       </div>
     </UploaderContainer>
   );

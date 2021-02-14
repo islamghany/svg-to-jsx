@@ -1,6 +1,6 @@
 import styled from "styled-components";
 
-const Unit = styled(div)`
+const Unit = styled.div`
   position: relative;
   margin-bottom: 1.5rem;
   .toggle{
@@ -11,13 +11,13 @@ const Unit = styled(div)`
       font-size:1.5rem;
       font-weight:400;
       padding-right:1rem;
-      color:${({theme})=>theme.colors.dark[1]};
+      color:${({theme})=>theme.mainText};
     }
     &__container{
       input{
         display:none;
          &:checked ~ label{
-        background: ${({ theme,color }) => color ? theme.colors.[color][1]: theme.colors.primary[1]};
+        background: ${({ theme }) =>  theme.primary};
         &::after{
           background-color: white;
           transform: translateX(1.9rem);
@@ -25,7 +25,7 @@ const Unit = styled(div)`
       } 
       }
       label{
-      background:${({theme})=>theme.colors.dark[4]};
+      background:${({theme})=>theme.subText};
       width:4.5rem;
       height:2.6rem;
       display:flex;
@@ -54,17 +54,18 @@ const Unit = styled(div)`
 `;
 
 
-export const Toggle = ({children,color,name})=>{
+ const Toggle = ({children,color,name,...props})=>{
   return <Unit color={color}>
     <div className="toggle">
       <div className="toggle__content">
         {children}
       </div>
       <div className="toggle__container">
-        <input type="checkbox" class="form__toggle" id={name} />
+        <input type="checkbox" class="form__toggle" id={name} {...props} />
           <label for={name} class="toggle__label ios">
       </label>
       </div>
     </div>
   </Unit>
 }
+export default Toggle;
