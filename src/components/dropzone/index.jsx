@@ -1,14 +1,13 @@
-import { useCallback, useEffect, useState, useContext } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useDropzone } from "react-dropzone";
 import styled from "styled-components";
 import svgo from "../../utils/svgo";
 import prettier from "prettier/standalone";
 import svgr from "@svgr/core";
-import { CodeContext } from "../../context";
 import { Fileimage } from "../../assets/icons/";
 import Loading from "../loading/";
 import babylon from "prettier/parser-babel";
-
+import { useDispatch, useSelector } from "react-redux";
 const capitalize = (s) => {
   if (typeof s !== "string") return "";
   return s.charAt(0).toUpperCase() + s.slice(1);
@@ -125,26 +124,18 @@ function UploadIcon(props) {
   );
 }
 
-let imports = {};
 const handleCode = (code) => {
-  // if(rn && code?.length > 20){
-  //   const ex =   code.slice(code.indexOf("Svg, {") + 6, code.indexOf("}")).split(',');
-  //   for(let o of ex){
-  //     if(o?.length && !(o.trim() in imports)){
-  //         imports[o.trim()]=1;
-  //     }
-  //   }
-  //   console.log(imports);
-  // }
   return (
     "export " + code.slice(code.indexOf("fun"), code.indexOf("export default"))
   );
 };
-const getImportsName = () => {
-  return Object.keys(imports).join(" ,");
-};
+
 function MyDropzone() {
-  const { setJSCode, endName, RN,icon } = useContext(CodeContext);
+  const icon = useSelector((state) => state.icon);
+  const RN = useSelector((state) => state.rn);
+  const append = useSelector((state) => state.append);
+  const [jsCode, setJSCode] = useState({ code: "", imports: {}, counts: 0 });
+  const dispatch = useDispatch();
   const [svgCode, setSVGCode] = useState([]);
   //const [imports,setImports] = useState({});
   const onDrop = useCallback((acceptedFiles) => {
@@ -165,7 +156,7 @@ function MyDropzone() {
     reader.readAsBinaryString(file);
   }
   const waitUntil = async (code) => {
-    code.map(async (c) => {
+    code.map(async (c, idx) => {
       const svgoCode = await svgo(c.svg);
       const transformedCode = await svgr(
         svgoCode,
@@ -192,28 +183,12 @@ function MyDropzone() {
           },
         },
         {
-          componentName: endName?.length
-            ? handleSVGName(c.name.split(".")[0]) + endName
+          componentName: append?.length
+            ? handleSVGName(c.name.split(".")[0]) + append
             : handleSVGName(c.name.split(".")[0]),
         }
       );
-      //icon +=handleCode(transformedCode);
-      // setJSCode((e)=>e+handleCode(transformedCode));
-      //  const prettierCode = prettier.format(transformedCode,{
-      //   parser: 'babel',
-      //   printWidth: 80,
-      //   tabWidth: 2,
-      //   useTabs: false,
-      //   semi: true,
-      //   singleQuote: false,
-      //   quoteProps: "as-needed",
-      //   jsxSingleQuote: false,
-      //   trailingComma: "none",
-      //   bracketSpacing: true,
-      //   jsxBracketSameLine: false,
-      //   arrowParens: "always",
-      // }
-      //  );
+
       const formattedCode = prettier.format(transformedCode, {
         parser: "babel",
         plugins: [babylon],
@@ -229,36 +204,73 @@ function MyDropzone() {
         jsxBracketSameLine: false,
         arrowParens: "always",
       });
-      //console.log(formattedCode)
       setJSCode((e) => ({
         code: e.code + handleCode(formattedCode),
-        imports: ((impo={},RN) => {         
+        imports: ((impo, RN) => {
           if (RN) {
-             let imp = {...impo};
-              const exp = formattedCode.slice(formattedCode.indexOf("Svg, {") + 6, formattedCode.indexOf("}"))
+            let imp = { ...impo };
+            const exp = formattedCode
+              .slice(
+                formattedCode.indexOf("Svg, {") + 6,
+                formattedCode.indexOf("}")
+              )
               .split(",");
             for (let o of exp) {
               if (o?.length && !(o.trim() in imp)) {
                 imp[o.trim()] = 1;
               }
             }
-            return {...imp}
+            return { ...imp };
           }
           return {};
-        })(e.imports,RN),
+        })(e.imports, RN),
+        count: idx + 1,
       }));
+      // dispatch({
+      //   type:RN ? 'CODE_RN' : 'CODE_JSX',
+      //   payload:{
+      //   code: handleCode(formattedCode),
+      //   imports: ((RN) => {
+      //     if (RN) {
+      //        let imp = {};
+      //         const exp = formattedCode.slice(formattedCode.indexOf("Svg, {") + 6, formattedCode.indexOf("}"))
+      //         .split(",");
+      //       for (let o of exp) {
+      //         if (o?.length && !(o.trim() in imp)) {
+      //           imp[o.trim()] = 1;
+      //         }
+      //       }
+      //       return {...imp}
+      //     }
+      //     return {};
+      //   })(RN),
+      // }
+      // });
+      // if(idx ===code.length-1 && code.length > 1){
+      //   dispatch({
+      //     type:'LOADING',
+      //     payload:false
+      //   })
+      // }
 
-      // setJSCode((jsCode) => jsCode.concat({ name: c.name, svg: prettierCode }));
+      //console.log(jsCode);
+      //if(idx === code.length-1) setLoading(false);
+      //else if(idx ===0) setLoading(true)
     });
   };
-  // const doAfter= async ()=>{
-  //     console.log(imports)
-  //     setJSCode((e)=>'import Svg, { '+getImportsName()+' } from "react-native-svg" \n\n'+e);
-  //   }
+
   const onSubmit = async (code) => {
-    setJSCode({ code: "", imports: {} ,loading:true});
+    setJSCode({ code: "", imports: {}, counts: 0 });
+    // dispatch({
+    //   type:'CODE_INITIALIZE'
+    //   });
+    // if(code.length >1){
+    // dispatch({
+    //       type:'LOADING',
+    //       payload:true
+    //     })
+    // }
     await waitUntil(code);
-    setJSCode(e=>({ ...e,loading:false}));
   };
   const {
     rejectedFiles,
@@ -275,10 +287,28 @@ function MyDropzone() {
   });
   useEffect(() => {
     if (svgCode.length && svgCode.length === acceptedFiles.length) {
-      //if(RN) imports={};
+      dispatch({
+        type: "LOADING",
+        payload: true,
+      });
       onSubmit(svgCode);
     }
-  }, [svgCode, endName,RN,icon]);
+  }, [svgCode, append, RN, icon]);
+  useEffect(() => {
+    if (jsCode?.count > 1 && jsCode.count === acceptedFiles.length) {
+      dispatch({
+        type: "LOADING",
+        payload: false,
+      });
+      dispatch({
+        type: RN ? "CODE_RN" : "CODE_JSX",
+        payload: {
+          code: jsCode.code,
+          imports: jsCode.imports,
+        },
+      });
+    }
+  }, [jsCode.count]);
   return (
     <UploaderContainer>
       <h5>SVGs Input</h5>

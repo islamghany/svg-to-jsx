@@ -1,7 +1,7 @@
 import styled from "styled-components";
-import { useRef, useContext } from "react";
-import { CodeContext } from "../../context";
+import { useRef } from "react";
 import Toggle from "../toggle/";
+import { useDispatch } from "react-redux";
 const OptionsContainer = styled.div`
     background: ${({ theme }) => theme.secondary};
     overflow: auto;
@@ -58,11 +58,12 @@ const Divider = styled.div`
     border-radius: 0.002rem;
 `;
 const AppendForm = () => {
-    const { setEndName } = useContext(CodeContext);
+    const dispatch = useDispatch();
     const inputRef = useRef(null);
     const handleSubmit = (e) => {
         e.preventDefault();
-        if (inputRef?.current?.value) setEndName(inputRef?.current?.value);
+        if (inputRef?.current?.value)
+            dispatch({ type: "APPEND", payload: inputRef?.current?.value });
     };
     return (
         <div className="append">
@@ -81,20 +82,31 @@ const AppendForm = () => {
 };
 
 const ReactNativeOption = () => {
-    const { setRN } = useContext(CodeContext);
+    const dispatch = useDispatch();
     return (
         <div className="row">
-            <Toggle name="rn" onChange={(e) => setRN(e.target.checked)}>
+            <Toggle
+                name="rn"
+                onChange={(e) =>
+                    dispatch({ type: "RN", payload: e.target.checked })
+                }
+            >
                 React Native
             </Toggle>
         </div>
     );
 };
 const IconOption = () => {
-    const { setIcon } = useContext(CodeContext);
+    const dispatch = useDispatch();
+
     return (
         <div className="row">
-            <Toggle name="icon" onChange={(e) => setIcon(e.target.checked)}>
+            <Toggle
+                name="icon"
+                onChange={(e) =>
+                    dispatch({ type: "ICON", payload: e.target.checked })
+                }
+            >
                 Icon
             </Toggle>
         </div>
@@ -121,7 +133,6 @@ const IconOption = () => {
 //     </div>
 // }
 const Options = () => {
-    console.log("hhh");
     return (
         <OptionsContainer>
             <ReactNativeOption />

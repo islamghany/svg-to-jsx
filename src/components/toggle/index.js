@@ -61,8 +61,8 @@ const Unit = styled.div`
         {children}
       </div>
       <div className="toggle__container">
-        <input type="checkbox" class="form__toggle" id={name} {...props} />
-          <label for={name} class="toggle__label ios">
+        <input type="checkbox" classNames="form__toggle" id={name} {...props} />
+          <label htmlFor={name} classNames="toggle__label ios">
       </label>
       </div>
     </div>

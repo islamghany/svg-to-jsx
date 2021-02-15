@@ -1,11 +1,10 @@
-import { useContext, useEffect, useState } from "react";
-import styled from "styled-components";
+import { useEffect, useState, memo } from "react";
+import styled, { keyframes } from "styled-components";
 import Highlight, { defaultProps } from "prism-react-renderer";
 import nightOwl from "prism-react-renderer/themes/nightOwl";
-import { CodeContext } from "../../context";
 import copy from "copy-to-clipboard";
 import { Clipboard } from "../../assets/icons/";
-
+import { useSelector } from "react-redux";
 const Icon = styled.div`
   cursor: pointer;
   height: 2.4rem;
@@ -90,6 +89,123 @@ const LineContent = styled.span`
   padding-left: 4.4rem;
 `;
 
+const lds = keyframes`
+   0% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+`;
+const ContainerLoading = styled.div`
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  bottom: 0;
+  right: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.4);
+  .lds-spinner {
+    color: official;
+    display: inline-block;
+    position: relative;
+    width: 80px;
+    height: 80px;
+  }
+  .lds-spinner div {
+    transform-origin: 40px 40px;
+    animation: ${lds} 1.2s linear infinite;
+  }
+  .lds-spinner div:after {
+    content: " ";
+    display: block;
+    position: absolute;
+    top: 3px;
+    left: 37px;
+    width: 6px;
+    height: 18px;
+    border-radius: 20%;
+    background: #fff;
+  }
+  .lds-spinner div:nth-child(1) {
+    transform: rotate(0deg);
+    animation-delay: -1.1s;
+  }
+  .lds-spinner div:nth-child(2) {
+    transform: rotate(30deg);
+    animation-delay: -1s;
+  }
+  .lds-spinner div:nth-child(3) {
+    transform: rotate(60deg);
+    animation-delay: -0.9s;
+  }
+  .lds-spinner div:nth-child(4) {
+    transform: rotate(90deg);
+    animation-delay: -0.8s;
+  }
+  .lds-spinner div:nth-child(5) {
+    transform: rotate(120deg);
+    animation-delay: -0.7s;
+  }
+  .lds-spinner div:nth-child(6) {
+    transform: rotate(150deg);
+    animation-delay: -0.6s;
+  }
+  .lds-spinner div:nth-child(7) {
+    transform: rotate(180deg);
+    animation-delay: -0.5s;
+  }
+  .lds-spinner div:nth-child(8) {
+    transform: rotate(210deg);
+    animation-delay: -0.4s;
+  }
+  .lds-spinner div:nth-child(9) {
+    transform: rotate(240deg);
+    animation-delay: -0.3s;
+  }
+  .lds-spinner div:nth-child(10) {
+    transform: rotate(270deg);
+    animation-delay: -0.2s;
+  }
+  .lds-spinner div:nth-child(11) {
+    transform: rotate(300deg);
+    animation-delay: -0.1s;
+  }
+  .lds-spinner div:nth-child(12) {
+    transform: rotate(330deg);
+    animation-delay: 0s;
+  }
+`;
+
+const Loading = memo(() => {
+  const loading = useSelector((state) => state.loading);
+  if (loading) {
+    return (
+      <ContainerLoading>
+        <div className="lds-spinner">
+          <div></div>
+          <div></div>
+          <div></div>
+          <div></div>
+          <div></div>
+          <div></div>
+          <div></div>
+          <div></div>
+          <div></div>
+          <div></div>
+          <div></div>
+          <div></div>
+        </div>
+      </ContainerLoading>
+    );
+  } else {
+    return null;
+  }
+});
 const Copy = ({ code }) => {
   const [copied, setCopied] = useState(false);
   return copied ? (
@@ -116,21 +232,23 @@ const getImportsName = (imports) => {
   return Object.keys(imports).join(" ,");
 };
 const Code = () => {
-  const { jsCode } = useContext(CodeContext);
-  console.log(jsCode.loading)
-  const code = jsCode?.code ? jsCode?.imports?.Path ? 'import Svg, { '+getImportsName(jsCode.imports)+' } from "react-native-svg" \n\n' +jsCode.code   : jsCode.code  : "";
+  const jsCode = useSelector((state) => state.code);
+  const code = jsCode?.code
+    ? jsCode?.imports?.Path
+      ? "import Svg, { " +
+        getImportsName(jsCode.imports) +
+        ' } from "react-native-svg" \n\n' +
+        jsCode.code
+      : jsCode.code
+    : "";
   return (
     <CodeContainer>
       <div className="head">
         <h5>JSX Output</h5>
         <Copy code={code} />
       </div>
-      <Highlight
-        {...defaultProps}
-        theme={nightOwl}
-        code={code}
-        language="jsx"
-      >
+      <Loading />
+      <Highlight {...defaultProps} theme={nightOwl} code={code} language="jsx">
         {({ className, style, tokens, getLineProps, getTokenProps }) => (
           <Pre className={className} style={style}>
             <div className="noLine"></div>
