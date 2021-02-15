@@ -7,7 +7,10 @@ const OptionsContainer = styled.div`
     overflow: auto;
     width: 20rem;
     border-right: 1px solid ${({ theme }) => theme.border};
-
+    @media (max-width: 900px) {
+        max-width:100vw;
+        width:100%;
+    }
     p {
         margin: 1rem 0;
     }

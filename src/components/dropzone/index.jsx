@@ -53,6 +53,9 @@ const UploaderContainer = styled.div`
   display: flex;
   flex-direction: column;
   height: calc(100vh - 6.6rem);
+   @media (max-width: 900px) {
+       border-top: 1px solid ${({ theme }) => theme.border};
+    }
   h5 {
     padding: 1.2rem;
     text-align: center;

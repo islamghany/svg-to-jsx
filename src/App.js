@@ -34,6 +34,9 @@ const Container = styled.div`
     flex: 1;
     display: flex;
     height: 100%;
+    @media (max-width: 900px) {
+        flex-wrap:wrap;
+    }
   }
 `;
 function App() {

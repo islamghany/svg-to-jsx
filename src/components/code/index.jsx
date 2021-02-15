@@ -32,6 +32,7 @@ const CodeContainer = styled.div`
   height: calc(100vh - 4.6rem);
   border-left: 1px solid ${({ theme }) => theme.border};
   position: relative;
+
   .head {
     padding: 0.8rem 2rem;
     display: flex;
@@ -39,6 +40,9 @@ const CodeContainer = styled.div`
     justify-content: space-between;
     border-bottom: 1px solid ${({ theme }) => theme.border};
     background: ${({ theme }) => theme.secondary};
+    @media (max-width: 900px) {
+       border-top: 1px solid ${({ theme }) => theme.border};
+    }
   }
   h5 {
     text-align: center;
@@ -52,6 +56,9 @@ const Pre = styled.pre`
   overflow: auto;
   flex: 1;
   width: calc((100vw - 20rem) / 2);
+  @media (max-width: 900px) {
+        width: 50vw;
+    }
   background: ${({ theme }) => theme.bg} !important;
   .noLine {
     position: absolute;
@@ -214,7 +221,7 @@ const Copy = ({ code }) => {
     </Icon>
   ) : (
     <Icon
-      title="copy clipboard"
+      title="copy to clipboard"
       onClick={() => {
         copy(code, { message: "Click to copy to clipboard" });
         setCopied(true);
