@@ -4,7 +4,9 @@ import Highlight, { defaultProps } from "prism-react-renderer";
 import nightOwl from "prism-react-renderer/themes/nightOwl";
 import copy from "copy-to-clipboard";
 import { Clipboard } from "../../assets/icons/";
-import { useSelector } from "react-redux";
+import { useSelector ,useDispatch} from "react-redux";
+import Editor from '../editor/';
+import {optimize} from '../../utils/svg'
 const Icon = styled.div`
   cursor: pointer;
   height: 2.4rem;
@@ -32,7 +34,7 @@ const CodeContainer = styled.div`
   height: calc(100vh - 4.6rem);
   border-left: 1px solid ${({ theme }) => theme.border};
   position: relative;
-
+  width: calc((100vw - 20rem) / 2);
   .head {
     padding: 0.8rem 2rem;
     display: flex;
@@ -43,11 +45,12 @@ const CodeContainer = styled.div`
     @media (max-width: 900px) {
        border-top: 1px solid ${({ theme }) => theme.border};
     }
-  }
-  h5 {
+    h5 {
     text-align: center;
     background: ${({ theme }) => theme.secondary};
   }
+  }
+  
 `;
 const Pre = styled.pre`
   text-align: left;
@@ -255,24 +258,140 @@ const Code = () => {
         <Copy code={code} />
       </div>
       <Loading />
-      <Highlight {...defaultProps} theme={nightOwl} code={code} language="jsx">
-        {({ className, style, tokens, getLineProps, getTokenProps }) => (
-          <Pre className={className} style={style}>
-            <div className="noLine"></div>
-            {tokens.map((line, i) => (
-              <Line key={i} {...getLineProps({ line, key: i })}>
-                <LineNo>{i + 1}</LineNo>
-                <LineContent>
-                  {line.map((token, key) => (
-                    <span key={key} {...getTokenProps({ token, key })} />
-                  ))}
-                </LineContent>
-              </Line>
-            ))}
-          </Pre>
-        )}
-      </Highlight>
+      <Editor mode="jsx" isReadOnly value={code}/>
     </CodeContainer>
   );
 };
 export default Code;
+
+
+
+/**
+
+const Container = styled.div`
+      flex: 1;
+      height: 100%;
+      position: relative;
+      .head {
+        height: 4rem;
+        padding: 0 2rem 0 6rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        border-bottom: 1px solid ${({ theme }) => theme.border};
+        background: ${({ theme }) => theme.secondary};
+        @media (max-width: 900px) {
+          border-top: 1px solid ${({ theme }) => theme.border};
+        }
+        h5 {
+          text-align: center;
+          background: ${({ theme }) => theme.secondary};
+        }
+      }
+      .error {
+        height: 0.4rem;
+        width: 100%;
+        background: transparent;
+        &.active {
+          background: red;
+        }
+      }
+    `;
+    const Error = () => {
+      const error = useSelector(state=>state.error);
+      console.log(error)
+      return <div className={`error ${error ? "active" : ""}`}></div>;
+    };
+    
+    const JsxCode = () => {
+      return (
+        <Container>
+          <Loading />
+          <div className="head">
+            <h5>JSX Output</h5>
+            <Copy code={"code"} />
+          </div>
+          <Editor value="" mode="jsx" onClick={() => {}} isReadOnly />
+        </Container>
+      );
+    };
+    const SvgCode = () => {
+      const dispatch = useDispatch();
+      const onChange = async (svg) => {
+        const v = svg.split("</svg>");
+        let code = [];
+        dispatch({
+                  type:'LOADING',
+                  payload:true
+                });
+        for (let d of v) {
+          if (d.length && d.trim()) {
+            try {
+              const c = await optimize(d + "</svg>");
+              if (c === false){
+                dispatch({
+                  type:'ERROR',
+                  payload:true
+                });
+                dispatch({
+                  type:'LOADING',
+                  payload:false
+                });
+                return;
+              }
+              code.push(c);
+            } catch (err) {
+              console.log(err);
+            }
+          }
+        }
+        dispatch({
+                  type:'ERROR',
+                  payload:false
+                })
+        console.log(code);
+       let jsCode='',idx=1;
+       for(let svgo of code){
+        
+           const c = await toJSX(svgo,"Svg"+(idx++));
+           if(c===false){
+              dispatch({
+                  type:'ERROR',
+                  payload:true
+                });
+                dispatch({
+                  type:'LOADING',
+                  payload:false
+                });
+           }
+           jsCode+=c;
+         
+       }
+        dispatch({
+                  type:'LOADING',
+                  payload:false
+                })
+        dispatch({
+                  type:'ERROR',
+                  payload:false
+                })
+        
+      };
+      return (
+        <Container>
+          <div className="head">
+            <h5>SVGs Input</h5>
+          </div>
+          <Error />
+          <Editor value="" mode="xml" onChange={onChange} />
+        </Container>
+      );
+    };
+    export const Code = ({}) => {
+      return (
+        <>
+          <SvgCode />
+          <JsxCode />
+        </>
+      );
+    };*/

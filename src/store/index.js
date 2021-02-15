@@ -8,6 +8,14 @@ const loading = (state = false, action) => {
 			return state;
 	}
 };
+const error = (state = false, action) => {
+	switch (action.type) {
+		case "ERROR":
+			return action.payload;
+		default:
+			return state;
+	}
+};
 const code = (state = { code: "", imports: {} }, action) => {
 	switch (action.type) {
 		case "CODE_INITIALIZE":
@@ -58,5 +66,6 @@ export default createStore(
 		rn,
 		icon,
 		append,
+		error
 	})
 );

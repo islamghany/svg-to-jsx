@@ -8,6 +8,7 @@ import Options from "./components/options/";
 
 import { Provider } from "react-redux";
 import store from "./store/";
+import Editor from './components/editor/'
 /*
   background-image: linear-gradient(181.81deg,#6333ff 25%,#441ebf 75%);
     background-repeat: no-repeat;

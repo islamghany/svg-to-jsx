@@ -1,13 +1,16 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState,memo } from "react";
 import { useDropzone } from "react-dropzone";
 import styled from "styled-components";
 import svgo from "../../utils/svgo";
 import prettier from "prettier/standalone";
+import babylon from "prettier/parser-babel";
 import svgr from "@svgr/core";
 import { Fileimage } from "../../assets/icons/";
 import Loading from "../loading/";
-import babylon from "prettier/parser-babel";
 import { useDispatch, useSelector } from "react-redux";
+import Editor from '../editor/';
+
+
 const capitalize = (s) => {
   if (typeof s !== "string") return "";
   return s.charAt(0).toUpperCase() + s.slice(1);
@@ -52,7 +55,8 @@ const UploaderContainer = styled.div`
   flex: 1;
   display: flex;
   flex-direction: column;
-  height: calc(100vh - 6.6rem);
+  height: calc(100vh - 4.6rem);
+  width: calc((100vw - 20rem) / 2);
    @media (max-width: 900px) {
        border-top: 1px solid ${({ theme }) => theme.border};
     }
@@ -65,10 +69,18 @@ const UploaderContainer = styled.div`
   .container {
     flex: 1;
     display: flex;
-    align-items: center;
-    justify-content: center;
+    flex-direction:column;
     outline: none;
     position: relative;
+    .ace-editor{
+    width: 100%;
+    height: auto !important;
+    padding-bottom:2rem !important;
+    }
+    .ace-content  {
+    width: 100%;
+    height: auto !important;
+    }
     .active-drag {
       position: absolute;
       top: 0;
@@ -99,7 +111,7 @@ const UploaderContainer = styled.div`
     justify-content: center;
     flex-direction: column;
     background: ${({ theme }) => theme.secondary};
-    border-radius: 1rem;
+     border: 1px solid ${({ theme }) => theme.border};
   }
   .icon {
     svg {
@@ -156,7 +168,7 @@ function MyDropzone() {
         svgCode.concat({ svg: binaryStr, name: file.name })
       );
     };
-    reader.readAsBinaryString(file);
+    reader.readAsBinaryString(file); 
   }
   const waitUntil = async (code) => {
     code.map(async (c, idx) => {
@@ -227,7 +239,7 @@ function MyDropzone() {
           }
           return {};
         })(e.imports, RN),
-        count: idx + 1,
+        count: idx + 1
       }));
       // dispatch({
       //   type:RN ? 'CODE_RN' : 'CODE_JSX',
@@ -290,24 +302,29 @@ function MyDropzone() {
   });
   useEffect(() => {
     if (svgCode.length && svgCode.length === acceptedFiles.length) {
+      if(svgCode.length > 1){
       dispatch({
         type: "LOADING",
         payload: true,
       });
+    }
       onSubmit(svgCode);
     }
   }, [svgCode, append, RN, icon]);
   useEffect(() => {
-    if (jsCode?.count > 1 && jsCode.count === acceptedFiles.length) {
+    if (jsCode?.count > 0 && jsCode.count === acceptedFiles.length) {
+       if(jsCode?.count  > 1){
       dispatch({
         type: "LOADING",
         payload: false,
       });
+    }
       dispatch({
         type: RN ? "CODE_RN" : "CODE_JSX",
         payload: {
           code: jsCode.code,
           imports: jsCode.imports,
+          uploads:true
         },
       });
     }
@@ -335,8 +352,14 @@ function MyDropzone() {
           <p>or</p>
           <Button onClick={open}>Upload SVGs</Button>
         </div>
+         <CodeEditor />
       </div>
+     
     </UploaderContainer>
   );
 }
+
+const CodeEditor = memo(()=>{
+  return <Editor value="" mode="xml" olaceholder="Or paste svg code here" />
+})
 export default MyDropzone;
