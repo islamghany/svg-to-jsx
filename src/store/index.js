@@ -16,21 +16,18 @@ const error = (state = false, action) => {
 			return state;
 	}
 };
-const code = (state = { code: "", imports: {} }, action) => {
+const svg = (state = {code:'',isCode:false,id:-1}, action) => {
 	switch (action.type) {
-		case "CODE_INITIALIZE":
-			return {
-				code: "",
-				imports: {},
-			};
-		case "CODE_JSX":
-			return {
-				...action.payload,
-			};
-		case "CODE_RN":
-			return {
-				...action.payload,
-			};
+		case "SVG":
+			return action.payload
+		default:
+			return state;
+	}
+};
+const jsx = (state = "", action) => {
+	switch (action.type) {
+		case "JSX":
+			return action.payload
 		default:
 			return state;
 	}
@@ -61,7 +58,8 @@ const append = (state = "", action) => {
 };
 export default createStore(
 	combineReducers({
-		code,
+		svg,
+		jsx,
 		loading,
 		rn,
 		icon,

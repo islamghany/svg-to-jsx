@@ -6,7 +6,6 @@ import 'brace/mode/jsx';
 import 'brace/mode/xml';
 import "ace-builds/src-noconflict/theme-monokai";
 
-//import '../styles/editor';
 
 const Container = styled.div`
     flex:1;

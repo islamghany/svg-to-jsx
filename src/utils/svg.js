@@ -21,7 +21,7 @@ const handleSVGName = (e = "") => {
 	return nums?.length ? name + nums : name;
 };
 
-const handleCode = (code) => {
+export const handleCode = (code) => {
   return (
     "export " + code.slice(code.indexOf("fun"), code.indexOf("export default"))
   );
@@ -67,7 +67,7 @@ export const toJSX = async (svgoCode, name, append=null,RN=false,icon=false) => 
 					: handleSVGName(name.split(".")[0]),
 			}
 		);
-		return handleCode(transformedCode);
+		return transformedCode;
 	} catch (err) {
 		return false;
 	}

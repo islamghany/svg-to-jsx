@@ -1,33 +1,10 @@
-import { useCallback, useEffect, useState,memo } from "react";
+import { useCallback, useEffect, useState, memo } from "react";
 import { useDropzone } from "react-dropzone";
 import styled from "styled-components";
-import svgo from "../../utils/svgo";
-import prettier from "prettier/standalone";
-import babylon from "prettier/parser-babel";
-import svgr from "@svgr/core";
 import { Fileimage } from "../../assets/icons/";
-import Loading from "../loading/";
 import { useDispatch, useSelector } from "react-redux";
-import Editor from '../editor/';
+import Editor from "../editor/";
 
-
-const capitalize = (s) => {
-  if (typeof s !== "string") return "";
-  return s.charAt(0).toUpperCase() + s.slice(1);
-};
-const handleSVGName = (e = "") => {
-  let name = e.replace(/#|_| |-/g, "");
-  name = capitalize(name);
-  let nums = "";
-  for (let ch of name) {
-    if (!isNaN(ch) && !isNaN(parseInt(ch))) nums += ch;
-    else break;
-  }
-  if (nums.length) {
-    name = name.slice(nums.length);
-  }
-  return nums?.length ? name + nums : name;
-};
 const Button = styled.button`
   background-image: linear-gradient(181.81deg, #6333ff 25%, #441ebf 75%);
   background-repeat: no-repeat;
@@ -57,9 +34,9 @@ const UploaderContainer = styled.div`
   flex-direction: column;
   height: calc(100vh - 4.6rem);
   width: calc((100vw - 20rem) / 2);
-   @media (max-width: 900px) {
-       border-top: 1px solid ${({ theme }) => theme.border};
-    }
+  @media (max-width: 900px) {
+    border-top: 1px solid ${({ theme }) => theme.border};
+  }
   h5 {
     padding: 1.2rem;
     text-align: center;
@@ -69,17 +46,25 @@ const UploaderContainer = styled.div`
   .container {
     flex: 1;
     display: flex;
-    flex-direction:column;
+    flex-direction: column;
     outline: none;
     position: relative;
-    .ace-editor{
-    width: 100%;
-    height: auto !important;
-    padding-bottom:2rem !important;
+    .error {
+      height: 0.4rem;
+      width: 100%;
+      background: transparent;
+      &.active {
+        background: red;
+      }
     }
-    .ace-content  {
-    width: 100%;
-    height: auto !important;
+    .ace-editor {
+      width: 100%;
+      height: auto !important;
+      padding-bottom: 2rem !important;
+    }
+    .ace-content {
+      width: 100%;
+      height: auto !important;
     }
     .active-drag {
       position: absolute;
@@ -87,7 +72,7 @@ const UploaderContainer = styled.div`
       left: 0;
       bottom: 0;
       right: 0;
-      z-index: 4;
+      z-index: 10000;
       background: rgba(0, 0, 0, 0.8);
       border: 2px dashed ${({ theme }) => theme.mainText};
       display: flex;
@@ -111,7 +96,7 @@ const UploaderContainer = styled.div`
     justify-content: center;
     flex-direction: column;
     background: ${({ theme }) => theme.secondary};
-     border: 1px solid ${({ theme }) => theme.border};
+    border: 1px solid ${({ theme }) => theme.border};
   }
   .icon {
     svg {
@@ -139,20 +124,10 @@ function UploadIcon(props) {
   );
 }
 
-const handleCode = (code) => {
-  return (
-    "export " + code.slice(code.indexOf("fun"), code.indexOf("export default"))
-  );
-};
-
 function MyDropzone() {
-  const icon = useSelector((state) => state.icon);
-  const RN = useSelector((state) => state.rn);
-  const append = useSelector((state) => state.append);
   const [jsCode, setJSCode] = useState({ code: "", imports: {}, counts: 0 });
   const dispatch = useDispatch();
   const [svgCode, setSVGCode] = useState([]);
-  //const [imports,setImports] = useState({});
   const onDrop = useCallback((acceptedFiles) => {
     setSVGCode([]);
     for (var i = 0; i < acceptedFiles.length; i++) {
@@ -168,124 +143,17 @@ function MyDropzone() {
         svgCode.concat({ svg: binaryStr, name: file.name })
       );
     };
-    reader.readAsBinaryString(file); 
+    reader.readAsBinaryString(file);
   }
-  const waitUntil = async (code) => {
-    code.map(async (c, idx) => {
-      const svgoCode = await svgo(c.svg);
-      const transformedCode = await svgr(
-        svgoCode,
-        {
-          svgCode: "",
-          native: RN,
-          name: "Icon",
-          icon: icon,
-          jsx: false,
-          jsCode: "",
-          prettier: {
-            parser: "babel",
-            printWidth: 80,
-            tabWidth: 2,
-            useTabs: false,
-            semi: true,
-            singleQuote: false,
-            quoteProps: "as-needed",
-            jsxSingleQuote: false,
-            trailingComma: "none",
-            bracketSpacing: true,
-            jsxBracketSameLine: false,
-            arrowParens: "always",
-          },
-        },
-        {
-          componentName: append?.length
-            ? handleSVGName(c.name.split(".")[0]) + append
-            : handleSVGName(c.name.split(".")[0]),
-        }
-      );
-
-      const formattedCode = prettier.format(transformedCode, {
-        parser: "babel",
-        plugins: [babylon],
-        printWidth: 80,
-        tabWidth: 2,
-        useTabs: false,
-        semi: true,
-        singleQuote: false,
-        quoteProps: "as-needed",
-        jsxSingleQuote: false,
-        trailingComma: "none",
-        bracketSpacing: true,
-        jsxBracketSameLine: false,
-        arrowParens: "always",
-      });
-      setJSCode((e) => ({
-        code: e.code + handleCode(formattedCode),
-        imports: ((impo, RN) => {
-          if (RN) {
-            let imp = { ...impo };
-            const exp = formattedCode
-              .slice(
-                formattedCode.indexOf("Svg, {") + 6,
-                formattedCode.indexOf("}")
-              )
-              .split(",");
-            for (let o of exp) {
-              if (o?.length && !(o.trim() in imp)) {
-                imp[o.trim()] = 1;
-              }
-            }
-            return { ...imp };
-          }
-          return {};
-        })(e.imports, RN),
-        count: idx + 1
-      }));
-      // dispatch({
-      //   type:RN ? 'CODE_RN' : 'CODE_JSX',
-      //   payload:{
-      //   code: handleCode(formattedCode),
-      //   imports: ((RN) => {
-      //     if (RN) {
-      //        let imp = {};
-      //         const exp = formattedCode.slice(formattedCode.indexOf("Svg, {") + 6, formattedCode.indexOf("}"))
-      //         .split(",");
-      //       for (let o of exp) {
-      //         if (o?.length && !(o.trim() in imp)) {
-      //           imp[o.trim()] = 1;
-      //         }
-      //       }
-      //       return {...imp}
-      //     }
-      //     return {};
-      //   })(RN),
-      // }
-      // });
-      // if(idx ===code.length-1 && code.length > 1){
-      //   dispatch({
-      //     type:'LOADING',
-      //     payload:false
-      //   })
-      // }
-
-      //console.log(jsCode);
-      //if(idx === code.length-1) setLoading(false);
-      //else if(idx ===0) setLoading(true)
+  const onSubmit = (code) => {
+    dispatch({
+      type: "SVG",
+      payload: {
+        isCode: false,
+        code,
+        id: parseInt(10000000 * Math.random()),
+      },
     });
-  };
-
-  const onSubmit = async (code) => {
-    setJSCode({ code: "", imports: {}, counts: 0 });
-    // dispatch({
-    //   type:'CODE_INITIALIZE'
-    //   });
-    // if(code.length >1){
-    // dispatch({
-    //       type:'LOADING',
-    //       payload:true
-    //     })
-    // }
-    await waitUntil(code);
   };
   const {
     rejectedFiles,
@@ -302,33 +170,15 @@ function MyDropzone() {
   });
   useEffect(() => {
     if (svgCode.length && svgCode.length === acceptedFiles.length) {
-      if(svgCode.length > 1){
-      dispatch({
-        type: "LOADING",
-        payload: true,
-      });
-    }
+      if (svgCode.length > 1) {
+        dispatch({
+          type: "LOADING",
+          payload: true,
+        });
+      }
       onSubmit(svgCode);
     }
-  }, [svgCode, append, RN, icon]);
-  useEffect(() => {
-    if (jsCode?.count > 0 && jsCode.count === acceptedFiles.length) {
-       if(jsCode?.count  > 1){
-      dispatch({
-        type: "LOADING",
-        payload: false,
-      });
-    }
-      dispatch({
-        type: RN ? "CODE_RN" : "CODE_JSX",
-        payload: {
-          code: jsCode.code,
-          imports: jsCode.imports,
-          uploads:true
-        },
-      });
-    }
-  }, [jsCode.count]);
+  }, [svgCode?.length]);
   return (
     <UploaderContainer>
       <h5>SVGs Input</h5>
@@ -352,14 +202,39 @@ function MyDropzone() {
           <p>or</p>
           <Button onClick={open}>Upload SVGs</Button>
         </div>
-         <CodeEditor />
+        <CodeEditor />
       </div>
-     
     </UploaderContainer>
   );
 }
 
-const CodeEditor = memo(()=>{
-  return <Editor value="" mode="xml" olaceholder="Or paste svg code here" />
-})
+const Error = memo(() => {
+  const error = useSelector((state) => state.error);
+  return <div className={`error ${error ? "active" : ""}`}></div>;
+});
+
+const CodeEditor = memo(() => {
+  const dispatch = useDispatch();
+  const onChange = (svg) => {
+    dispatch({
+      type: "SVG",
+      payload: {
+        isCode: true,
+        code: [{ svg, name: "SvgComponent" }],
+        id: parseInt(10000000 * Math.random()),
+      },
+    });
+  };
+  return (
+    <>
+      <Error />
+      <Editor
+        value=""
+        mode="xml"
+        placeholder="Or paste svg code here"
+        onChange={onChange}
+      />
+    </>
+  );
+});
 export default MyDropzone;

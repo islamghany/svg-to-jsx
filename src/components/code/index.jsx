@@ -1,12 +1,10 @@
 import { useEffect, useState, memo } from "react";
 import styled, { keyframes } from "styled-components";
-import Highlight, { defaultProps } from "prism-react-renderer";
-import nightOwl from "prism-react-renderer/themes/nightOwl";
 import copy from "copy-to-clipboard";
 import { Clipboard } from "../../assets/icons/";
-import { useSelector ,useDispatch} from "react-redux";
-import Editor from '../editor/';
-import {optimize} from '../../utils/svg'
+import { useSelector, useDispatch } from "react-redux";
+import Editor from "../editor/";
+import { optimize, toJSX, format, handleCode } from "../../utils/svg";
 const Icon = styled.div`
   cursor: pointer;
   height: 2.4rem;
@@ -43,60 +41,13 @@ const CodeContainer = styled.div`
     border-bottom: 1px solid ${({ theme }) => theme.border};
     background: ${({ theme }) => theme.secondary};
     @media (max-width: 900px) {
-       border-top: 1px solid ${({ theme }) => theme.border};
+      border-top: 1px solid ${({ theme }) => theme.border};
     }
     h5 {
-    text-align: center;
-    background: ${({ theme }) => theme.secondary};
-  }
-  }
-  
-`;
-const Pre = styled.pre`
-  text-align: left;
-  position: relative;
-  padding: 0.5em 0.5em 0.5em 0;
-  overflow: auto;
-  flex: 1;
-  width: calc((100vw - 20rem) / 2);
-  @media (max-width: 900px) {
-        width: 50vw;
+      text-align: center;
+      background: ${({ theme }) => theme.secondary};
     }
-  background: ${({ theme }) => theme.bg} !important;
-  .noLine {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 4.4rem;
-    bottom: 0;
-    height: 100%;
-    background: ${({ theme }) => theme.secondary} !important;
-    z-index: 33;
   }
-  &::selection {
-    background: ${({ theme }) => theme.primary};
-  }
-`;
-const Line = styled.div`
-  display: table-row;
-`;
-
-const LineNo = styled.span`
-  position: absolute;
-  z-index: 43;
-  display: table-cell;
-  text-align: right;
-  padding-right: 1rem;
-  width: 4.4rem;
-  user-select: none;
-  color: ${({ theme }) => theme.mainText};
-  background: ${({ theme }) => theme.secondary};
-  font-size: 1.2rem;
-`;
-
-const LineContent = styled.span`
-  display: table-cell;
-  padding-left: 4.4rem;
 `;
 
 const lds = keyframes`
@@ -241,30 +192,147 @@ const Copy = ({ code }) => {
 const getImportsName = (imports) => {
   return Object.keys(imports).join(" ,");
 };
-const Code = () => {
-  const jsCode = useSelector((state) => state.code);
-  const code = jsCode?.code
-    ? jsCode?.imports?.Path
-      ? "import Svg, { " +
-        getImportsName(jsCode.imports) +
-        ' } from "react-native-svg" \n\n' +
-        jsCode.code
-      : jsCode.code
-    : "";
+
+const Output = memo(() => {
+  const code = useSelector((state) => state.jsx);
   return (
-    <CodeContainer>
+    <>
       <div className="head">
         <h5>JSX Output</h5>
         <Copy code={code} />
       </div>
+      <Editor mode="jsx" isReadOnly value={code} />
+    </>
+  );
+});
+
+const Code = () => {
+  const svg = useSelector((state) => state.svg);
+  const icon = useSelector((state) => state.icon);
+  const rn = useSelector((state) => state.rn);
+  const append = useSelector((state) => state.append);
+  const [jsCode, setJSCode] = useState({ code: "", imports: {}, counts: 0 });
+  const dispatch = useDispatch();
+  const handleSvgFiles = async () => {
+    setJSCode({ code: "", imports: {}, count: 0 });
+    svg.code.map(async (c, idx) => {
+      const svgoCode = await optimize(c.svg);
+      if (svgoCode === false) {
+        if (!svg.isCode || c.svg.length > 0) {
+          dispatch({
+            type: "ERROR",
+            payload: true,
+          });
+        } else {
+          dispatch({
+            type: "ERROR",
+            payload: false,
+          });
+        }
+        dispatch({
+          type: "LOADING",
+          payload: false,
+        });
+        dispatch({
+        type: "JSX",
+        payload: '',
+      });
+        return;
+      }
+      const transformedCode = await toJSX(
+        svgoCode,
+        c.name,
+        append?.length ? append : null,
+        rn,
+        icon
+      );
+      if (transformedCode === false) {
+        if (!svg.isCode || c.svg.length > 0) {
+          dispatch({
+            type: "ERROR",
+            payload: true,
+          });
+        } else {
+          dispatch({
+            type: "ERROR",
+            payload: false,
+          });
+        }
+        dispatch({
+          type: "LOADING",
+          payload: false,
+        });
+        dispatch({
+        type: "JSX",
+        payload: '',
+      });
+        return;
+      }
+      const formattedCode = format(transformedCode);
+      setJSCode((e) => ({
+        code: e.code + handleCode(formattedCode),
+        imports: ((impo, rn) => {
+          if (rn) {
+            let imp = { ...impo };
+            const i = formattedCode.indexOf("Svg,");
+            if (i !== -1) {
+              const exp = formattedCode
+                .slice(i + 6, formattedCode.indexOf("}"))
+                .split(",");
+              for (let o of exp) {
+                if (o?.length && !(o.trim() in imp)) {
+                  imp[o.trim()] = 1;
+                }
+              }
+            }
+            return { ...imp };
+          }
+          return {};
+        })(e.imports, rn),
+        count: idx + 1,
+      }));
+    });
+  };
+  useEffect(() => {
+    if (svg.code.length && svg.id !== -1) {
+      handleSvgFiles();
+    }
+  }, [svg.id, icon, rn, append]);
+  useEffect(() => {
+    if (jsCode?.count > 0 && jsCode.count === svg?.code?.length) {
+      if (jsCode?.count > 1) {
+        dispatch({
+          type: "LOADING",
+          payload: false,
+        });
+      }
+      dispatch({
+        type: "ERROR",
+        payload: false,
+      });
+      let c = rn
+        ? "import Svg" +
+          (Object.entries(jsCode.imports).length === 0
+            ? ' from "react-native-svg"\n\n '
+            : ",{ " +
+              getImportsName(jsCode.imports) +
+              ' } from "react-native-svg" \n\n') +
+          jsCode.code
+        : jsCode.code;
+      dispatch({
+        type: "JSX",
+        payload: c,
+      });
+    }
+  }, [jsCode.count]);
+  return (
+    <CodeContainer>
       <Loading />
-      <Editor mode="jsx" isReadOnly value={code}/>
+      <Output />
     </CodeContainer>
   );
 };
 export default Code;
-
-
 
 /**
 
