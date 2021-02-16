@@ -9,7 +9,6 @@ const capitalize = (s) => {
 };
 const handleSVGName = (e = "") => {
 	let name = e.replace(/#|_| |-/g, "");
-	name = capitalize(name);
 	let nums = "";
 	for (let ch of name) {
 		if (!isNaN(ch) && !isNaN(parseInt(ch))) nums += ch;
@@ -18,6 +17,7 @@ const handleSVGName = (e = "") => {
 	if (nums.length) {
 		name = name.slice(nums.length);
 	}
+	name = capitalize(name);
 	return nums?.length ? name + nums : name;
 };
 

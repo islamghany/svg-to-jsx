@@ -6,3 +6,51 @@ export function Fileimage(props) {
 export function Clipboard(props) {
   return <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512" {...props}><path d="M336 64h-88.6c.4-2.6.6-5.3.6-8 0-30.9-25.1-56-56-56s-56 25.1-56 56c0 2.7.2 5.4.6 8H48C21.5 64 0 85.5 0 112v352c0 26.5 21.5 48 48 48h288c26.5 0 48-21.5 48-48V112c0-26.5-21.5-48-48-48zM192 32c13.3 0 24 10.7 24 24s-10.7 24-24 24-24-10.7-24-24 10.7-24 24-24zm160 432c0 8.8-7.2 16-16 16H48c-8.8 0-16-7.2-16-16V112c0-8.8 7.2-16 16-16h48v20c0 6.6 5.4 12 12 12h168c6.6 0 12-5.4 12-12V96h48c8.8 0 16 7.2 16 16z" /></svg>;
 }
+
+export function Align(props) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" {...props}>
+      <path
+        fill="#a2a1ff"
+        d="M21 7H3a1 1 0 010-2h18a1 1 0 010 2zm-8 4H3a1 1 0 010-2h10a1 1 0 010 2zm8 8H3a1 1 0 010-2h18a1 1 0 010 2zm-8-4H3a1 1 0 010-2h10a1 1 0 010 2z"
+      />
+      <path
+        fill="#6563ff"
+        d="M19 14.666a1 1 0 01-1-1v-3.333a1 1 0 011.64-.768l2 1.667a1 1 0 010 1.536l-2 1.667a.999.999 0 01-.64.231z"
+      />
+    </svg>
+  );
+}
+
+export function Alignalt(props) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" {...props}>
+      <path
+        fill="#6563ff"
+        d="M10 5H7a1 1 0 010-2h3a1 1 0 010 2zm0 4H3a1 1 0 010-2h7a1 1 0 010 2zm0 4H3a1 1 0 010-2h7a1 1 0 010 2zm0 4H3a1 1 0 010-2h7a1 1 0 010 2zm0 4H3a1 1 0 010-2h7a1 1 0 010 2zM21 5h-7a1 1 0 010-2h7a1 1 0 010 2zm0 4h-7a1 1 0 010-2h7a1 1 0 010 2zm0 4h-7a1 1 0 010-2h7a1 1 0 010 2zm0 4h-7a1 1 0 010-2h7a1 1 0 010 2zm-4 4h-3a1 1 0 010-2h3a1 1 0 010 2z"
+      />
+    </svg>
+  );
+}
+
+export function Aligncenter(props) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" {...props}>
+      <path
+        fill="#6563ff"
+        d="M21 7H3a1 1 0 010-2h18a1 1 0 010 2zm-4 4H7a1 1 0 010-2h10a1 1 0 010 2zm4 4H3a1 1 0 010-2h18a1 1 0 010 2zm-4 4H7a1 1 0 010-2h10a1 1 0 010 2z"
+      />
+    </svg>
+  );
+}
+
+export function Aligncenterjustify(props) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" {...props}>
+      <path
+        fill="#6563ff"
+        d="M21 5H3a1 1 0 010-2h18a1 1 0 010 2zm0 4H3a1 1 0 010-2h18a1 1 0 010 2zm0 4H3a1 1 0 010-2h18a1 1 0 010 2zm0 4H3a1 1 0 010-2h18a1 1 0 010 2zm-4 4H7a1 1 0 010-2h10a1 1 0 010 2z"
+      />
+    </svg>
+  );
+}
