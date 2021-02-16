@@ -1,9 +1,16 @@
 import {createGlobalStyle} from 'styled-components';
 import Avenir from '../assets/fonts/AvenirLTStd-Roman.woff2'
+import MonoLisa from '../assets/fonts/MonoLisa.woff2'
+
 export default createGlobalStyle`
 	 @font-face {
 	     font-family: 'Avenir';
 	     src: url(${Avenir}) format('woff2');
+         font-style: normal;
+	  }
+	  @font-face {
+	     font-family: 'MonoLisa';
+	     src: url(${MonoLisa}) format('woff2');
          font-style: normal;
 	  }
     *,
