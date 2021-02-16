@@ -15,7 +15,7 @@ const OptionsContainer = styled.div`
         margin: 1rem 0;
     }
     .append {
-        padding: 0 2rem;
+        padding: 0 2rem 2rem;
     }
     .row {
         padding: 1rem 2rem 0;

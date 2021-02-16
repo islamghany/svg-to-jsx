@@ -22,6 +22,15 @@ export default createGlobalStyle`
     }
 	html{
 		font-size:62.5%;
+		@media (max-width:  56.25em){
+			font-size: 50%;
+		}
+		@media (max-width: : 75em){
+			 font-size: 56.25%;
+		}
+		@media (min-width:112.5em){
+			font-size:75%;	
+		}
 	}
 	body{
 		color: ${({theme})=>theme.mainText};
